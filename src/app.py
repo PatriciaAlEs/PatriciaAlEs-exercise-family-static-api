@@ -18,6 +18,32 @@ CORS(app)
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
 
+John = {
+    "first_name": "John",
+    "last_name": jackson_family.last_name,
+    "age": 33,
+    "lucky_numbers": [7, 13, 22]
+}
+
+Jane = {
+    "first_name": "Jane",
+    "last_name": jackson_family.last_name,
+    "age": 35,
+    "lucky_numbers": [10, 14, 3]
+}
+
+Jimmy = {
+    "first_name": "Jimmy",
+    "last_name": jackson_family.last_name,
+    "age": 5,
+    "lucky_numbers": [1]
+}
+
+jackson_family.add_member(John)
+jackson_family.add_member(Jane)
+jackson_family.add_member(Jimmy)
+
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -34,19 +60,11 @@ def sitemap():
 # GET | POST | PUT | DELETE | PATCH
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
-
-    # this is how you can use the Family datastructure by calling its methods
+def get_all_members():
     members = jackson_family.get_all_members()
-    response_body = [ {
-        "family": members
-    }]
-    # devolvemos el END POINT jsonify(nuestra_informacion), codigo status
-    # 404 - Not found
-    # 200 - ok
-    # 400 - son errores 
-    # 500 - error del servidor (nosotros somos el servidor)
-    return jsonify(response_body), 200
+    return jsonify(members), 200
+
+
 
 @app.route('/member', methods=['POST'])  # agregar informacion
 def add_member():
@@ -57,14 +75,17 @@ def add_member():
     return jsonify({"done" : "usuario creado JEJEJEJE"})
 
 
-# @app.route('/members', methods=['PUT'])
 
 @app.route('/member/<int:member_id>', methods=['DELETE'])
 def delete_family_member(member_id):
     eliminar_familiar = jackson_family.delete_member(member_id)
-    if not eliminar_familiar:
-        return jsonify({"familiar not found"}),400
-    return jsonify({"hecho": "el borrado funcionó"}), 200
+    if "done" in eliminar_familiar:
+        return jsonify(eliminar_familiar), 200
+        # return jsonify({"eliminar_familiar": "el borrado funcionó"}), 200
+    # return jsonify({"msg":"familiar not found"}),400
+    return jsonify({"msg": "Member not found"}), 400
+    
+
 
 @app.route('/member/<int:member_id>', methods=['PUT'])
 def update_family_member(member_id):
@@ -81,6 +102,7 @@ def get_one_member(member_id):
     if not miembro_encontrado:
         return jsonify({"msg":"no se encontró al miembro"})
     return jsonify(miembro_encontrado), 200
+
 
 
 # this only runs if `$ python src/app.py` is executed
